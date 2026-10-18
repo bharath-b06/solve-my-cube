@@ -84,7 +84,7 @@ kbd, .mono { font-family: var(--font-mono); font-size: .9em; }
 .top-tabs { display: none; margin-left: auto; gap: 6px; }
 .icon-btn { width: 40px; height: 40px; border-radius: 12px; border: 2px solid var(--line); background: var(--panel); display: grid; place-items: center; }
 .icon-btn svg { width: 20px; height: 20px; }
-.topbar .icon-btn { margin-left: auto; }
+.topbar .icon-btn[data-action="algs"] { margin-left: auto; }
 
 /* ---------- Bottom nav ---------- */
 .bottomnav {
@@ -415,12 +415,39 @@ details.pad-wrap summary::-webkit-details-marker { display: none; }
 .tips li[data-i="💡"]::before, .tips li[data-i="🎯"]::before { background: none; font-size: 16px; }
 @media (min-width: 900px) { .net { --s: 26px; } }
 
+/* ---------- Cheat sheet & scramble help ---------- */
+.sheet-sub { color: var(--ink-soft); font-size: 14px; margin-top: -6px; }
+.cheat { display: grid; gap: 14px; margin-top: 8px; }
+.cheat-row { border-bottom: 2px solid var(--line); padding-bottom: 12px; }
+.cheat-row:last-child { border-bottom: 0; }
+.cheat-head { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+.cheat-head h3 { font-size: 18px; }
+.cheat-num { width: 28px; height: 28px; border-radius: 9px; background: var(--accent); color: #fff; display: grid; place-items: center; font: 700 14px var(--font-display); flex: none; }
+.cheat-row p { font-size: 14px; margin: 0 0 4px; }
+.cheat-tip { color: var(--ink-soft); }
+.cheat .alg-card { margin: 8px 0 0; }
+.scr-help { font-size: 13px; color: var(--ink-soft); margin: -2px 0 8px; line-height: 1.4; }
+.move-key { margin-top: 10px; font-size: 14px; }
+.move-key summary { font: 600 14px var(--font-display); color: var(--accent); cursor: pointer; }
+.move-key ul { padding-left: 18px; margin: 8px 0 0; display: grid; gap: 8px; }
+.move-key .chip { margin-right: 4px; vertical-align: middle; }
+.follow-card { text-align: center; background: var(--panel-2); border-radius: 20px; padding: 18px 14px; margin-top: 8px; }
+.follow-card .big { font-size: 44px; }
+.follow-count { font: 600 14px var(--font-display); color: var(--ink-soft); }
+.follow-chip { display: flex; justify-content: center; margin: 10px 0 8px; }
+.follow-chip .chip { font-size: 24px; padding: 10px 18px 10px 12px; border-radius: 16px; }
+.follow-chip .chip .dot { width: 26px; height: 26px; border-radius: 8px; }
+.follow-text { font: 600 18px var(--font-display); margin: 0; }
+.follow-all { margin-top: 12px; justify-content: center; }
+.follow-all .chip { font-size: 12px; padding: 3px 7px 3px 5px; }
+.follow-all .chip .dot { width: 10px; height: 10px; }
+
 /* ---------- Desktop ---------- */
 @media (min-width: 900px) {
   body { grid-template-rows: auto 1fr; }
   .bottomnav { display: none; }
   .top-tabs { display: flex; }
-  .topbar .icon-btn { margin-left: 8px; }
+  .topbar .icon-btn[data-action="algs"] { margin-left: 8px; }
   .top-tabs .tab { flex-direction: row; gap: 8px; padding: 8px 14px; font-size: 15px; }
   .top-tabs .tab svg { width: 20px; height: 20px; }
   .split { flex-direction: row; padding: 0 16px 16px; gap: 16px; }
@@ -450,6 +477,9 @@ details.pad-wrap summary::-webkit-details-marker { display: none; }
     Solve My Cube
   </a>
   <nav class="top-tabs" aria-label="Sections"></nav>
+  <button class="icon-btn" data-action="algs" aria-label="Algorithm cheat sheet" title="Algorithm cheat sheet">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5z"/><path d="M4 20.5A2.5 2.5 0 0 0 6.5 23H20v-5"/><path d="M9 8h7M9 11.5h5"/></svg>
+  </button>
   <button class="icon-btn" data-action="settings" aria-label="Settings">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.8v2.4M12 18.8v2.4M4.2 12H1.8M22.2 12h-2.4M5.4 5.4l1.7 1.7M16.9 16.9l1.7 1.7M5.4 18.6l1.7-1.7M16.9 7.1l1.7-1.7"/></svg>
   </button>
@@ -1140,8 +1170,8 @@ function moveLabel(tok, state) {
   if (color) text = text.replace(/the (top layer|bottom layer|right side|left side|front face|back)/, (m, p) => `the ${p} (${COLOR_NAMES[color]})`);
   return { short, text, color };
 }
-function chipsHTML(moves, startState, { done = -1, now = -1 } = {}) {
-  const notation = store.get('notation');
+function chipsHTML(moves, startState, { done = -1, now = -1, letters = false } = {}) {
+  const notation = letters || store.get('notation');
   let s = startState;
   return moves.map((tok, k) => {
     const lab = moveLabel(tok, s);
@@ -1748,6 +1778,7 @@ function show(view) {
 function route() {
   const h = location.hash.replace(/^#/, '') || 'learn';
   const [name, arg, arg2] = h.split('/');
+  closeSheet();
   lessonCtl.leave();
   playCtl.leave();
   solveCtl.leave();
@@ -1783,7 +1814,7 @@ function renderLearn() {
           <span><h3>${l.title}</h3><p>${l.blurb}</p></span>${st}</button>`;
       }).join('')}
     </div>
-    <p class="note">Method: the beginner layer-by-layer (daisy) method. Your progress is saved in this browser only. Have a scrambled cube? Open <b>Solve</b> to scan it and get coached through it, turn by turn.</p>
+    <p class="note">Method: the beginner layer-by-layer (daisy) method. Need the moves fast? Tap the 📖 book button at the top for the algorithm cheat sheet. Your progress is saved in this browser only. Have a scrambled cube? Open <b>Solve</b> to scan it and get coached through it, turn by turn.</p>
   </div>`;
 }
 
@@ -2090,7 +2121,7 @@ const playCtl = {
   render() {
     const diffId = store.get('difficulty');
     const diffBtns = DIFFICULTIES.map((d, i) => `<button data-action="difficulty" data-id="${d.id}" aria-pressed="${d.id === diffId}"><span class="diff-bars">${DIFFICULTIES.map((_, j) => `<i class="${j <= i ? 'on' : ''}" style="height:${4 + j * 2}px"></i>`).join('')}</span>${d.label}<small>${d.moves} moves</small></button>`).join('');
-    const scr = this.scramble.length ? `<div class="scramble-box"><div class="lbl"><span>Scramble (from solved, yellow up, green front)</span></div><div class="chips">${chipsHTML(this.scramble, S0)}</div></div>` : '';
+    const scr = this.scramble.length ? scrambleBoxHTML(this.scramble, 'play') : '';
     $('#play-panel').innerHTML = `
       <div class="panel-head"><h2>Free play</h2>
         <button class="btn ghost small" data-action="undo" ${this.history.length ? '' : 'disabled'}>${ICONS.undo} Undo</button>
@@ -2208,7 +2239,7 @@ const timerCtl = {
       </button>
       <p style="color:var(--ink-soft);margin-top:14px">Scramble your cube with these moves first (start solved, yellow up, green front). Tap the big button to start and again when it’s solved, or press Space.</p>
       <div class="diff" role="group" aria-label="Scramble difficulty">${diffBtns}</div>
-      <div class="scramble-box"><div class="lbl"><span>Scramble</span><button class="link" data-action="timer-new-scramble">New scramble</button></div><div class="chips">${chipsHTML(this.scramble, S0)}</div></div>
+      ${scrambleBoxHTML(this.scramble, 'timer', '<button class="link" data-action="timer-new-scramble">New scramble</button>')}
       <div class="stats">
         <div class="stat"><b>${fmtTime(best)}</b><span>Best</span></div>
         <div class="stat"><b>${fmtTime(avgOf(times, 5))}</b><span>Avg of 5</span></div>
@@ -2686,11 +2717,78 @@ function settingsSheet() {
       <button class="btn ghost small" data-action="reset-progress">Reset</button></div>
     <p style="color:var(--ink-soft);font-size:13px;margin-top:10px">Everything is saved in this browser only.</p>`);
 }
+// ---------- Algorithm cheat sheet ----------
+const CHEAT = [
+  { stage: 'Daisy', id: 'daisy', when: 'Bring the 4 white edges up around the yellow center, white facing up.', tip: 'No algorithm. Turn the top to make room before lifting a white edge up.' },
+  { stage: 'White cross', id: 'cross', when: 'For each petal: turn the top until its side colour sits above the matching center.', tip: 'Then turn that side ×2 (half a turn). No algorithm.' },
+  { stage: 'White corners', id: 'corners', when: 'White corner above its spot, held at front-right. Repeat until it drops in (max 5 times).', algs: [['sexy', 1]] },
+  { stage: 'Middle layer', id: 'middle', when: 'Make an upside-down T. Top colour matches the right center → Right move; the left center → Left move.', algs: [['right', 1], ['left', 2]] },
+  { stage: 'Yellow cross', id: 'ycross', when: 'Dot: just do it. L: point it back-left. Line: make it go across. Repeat until you have a cross.', algs: [['fruruf', 1]] },
+  { stage: 'Yellow face', id: 'yface', when: 'Fish: head at front-left. None: yellow on the left of the front-left corner. Two: yellow facing you. Repeat.', algs: [['sune', 1]] },
+  { stage: 'Finish: corners', id: 'pll', when: 'Headlights (two same-colour corners on one side) at the back. None? Do it once from anywhere.', algs: [['headlights', 1]] },
+  { stage: 'Finish: edges', id: 'pll', when: 'Corners matched to the centers. Finished side at the back. Wrong way round? Do it again.', algs: [['edges', 2]] },
+];
+function algSheet() {
+  openSheet(`<h2>Algorithm cheat sheet</h2>
+    <p class="sheet-sub">Hold yellow on top and green facing you. Each chip is one turn.</p>
+    <div class="cheat">${CHEAT.map((c, i) => `
+      <section class="cheat-row">
+        <div class="cheat-head"><span class="cheat-num">${i < 7 ? i + 1 : 7}</span><h3>${c.stage}</h3></div>
+        <p>${c.when}</p>
+        ${c.tip ? `<p class="cheat-tip">${c.tip}</p>` : ''}
+        ${(c.algs || []).map(([k, page]) => `<div class="alg-card"><h4>${ALG_INFO[k].name}<button class="link" style="margin-left:auto;font-size:14px" data-action="alg-watch" data-id="${c.id}" data-page="${page}">▶ Watch</button></h4><div class="chips">${chipsHTML(splitAlg(ALG_INFO[k].alg), S0, { letters: true })}</div></div>`).join('')}
+      </section>`).join('')}</div>
+    ${moveKeyHTML()}`);
+}
+
+// ---------- Reading scrambles ----------
+function moveKeyHTML() {
+  return `<details class="move-key"><summary>How to read a move</summary>
+    <ul>
+      <li><span class="chip"><i class="dot" style="background:${COLOR_HEX.G}"></i><span>Front ↻</span></span> The coloured square is the <b>center colour</b> of the side to turn (with yellow on top and green facing you, the front is green).</li>
+      <li><b>↻ ↺</b> clockwise or anticlockwise, looking at that side. <b>↑ ↓</b> turn the right or left side up or down. <b>← →</b> turn the top or bottom row left or right.</li>
+      <li><b>×2</b> means half a turn: the same turn twice.</li>
+      <li>Letters (R, U, F…) are the standard names: R = right, L = left, U = up (top), D = down (bottom), F = front, B = back. A ′ means anticlockwise.</li>
+    </ul></details>`;
+}
+const followMoves = { play: () => playCtl.scramble, timer: () => timerCtl.scramble, example: () => getExample().scramble };
+function scrambleBoxHTML(moves, src, extra = '') {
+  return `<div class="scramble-box">
+    <div class="lbl"><span>Scramble · ${moves.length} turns</span>${extra}</div>
+    <p class="scr-help">Start solved, <b>yellow on top</b>, <b>green facing you</b>. Each chip is one turn: the coloured square is the side to turn, the arrow is which way.</p>
+    <div class="chips">${chipsHTML(moves, S0)}</div>
+    <button class="btn small" style="margin-top:10px;width:100%" data-action="follow" data-src="${src}">Follow step by step</button>
+    ${moveKeyHTML()}
+  </div>`;
+}
+const followCtl = {
+  moves: [], i: 0,
+  open(src) { this.moves = followMoves[src]().slice(); this.i = 0; this.render(); },
+  go(d) { this.i = Math.max(0, Math.min(this.moves.length, this.i + d)); this.render(); },
+  render() {
+    const n = this.moves.length, done = this.i >= n;
+    const tok = this.moves[this.i];
+    const lab = tok ? moveLabel(tok, S0) : null;
+    openSheet(`<h2>Scramble step by step</h2>
+      <p class="sheet-sub">Start with a solved cube: yellow on top, green facing you. Keep holding it that way.</p>
+      <div class="follow-card">
+        ${done ? `<div class="big">✅</div><h3>Scrambled!</h3><p>That’s all ${n} turns.</p>` : `
+          <div class="follow-count">Turn ${this.i + 1} of ${n}</div>
+          <div class="follow-chip">${chipsHTML([tok], S0, { now: 0 })}</div>
+          <p class="follow-text">${lab.text}</p>`}
+      </div>
+      <div class="chips follow-all">${chipsHTML(this.moves, S0, { done: this.i, now: this.i })}</div>
+      <div class="btn-row" style="margin-top:14px">
+        <button class="btn ghost" style="flex:1" data-action="follow-step" data-d="-1" ${this.i === 0 ? 'disabled' : ''}>Back</button>
+        ${done ? `<button class="btn good" style="flex:1" data-action="close-sheet">Done</button>` : `<button class="btn pop" style="flex:2" data-action="follow-step" data-d="1">Done, next turn</button>`}
+      </div>`);
+  },
+};
 function realCubeSheet() {
   const ex = getExample();
   openSheet(`<h2>Follow along on your real cube</h2>
     <p>To get the same cube as the example, start with a <b>solved</b> cube, yellow on top and green facing you, and do these moves:</p>
-    <div class="scramble-box"><div class="chips">${chipsHTML(ex.scramble, S0)}</div></div>
+    ${scrambleBoxHTML(ex.scramble, 'example')}
     <p style="margin-top:12px">Each lesson picks up where the one before finished, so go through them in order and your real cube will match the screen.</p>
     <p style="color:var(--ink-soft);font-size:14px">Cube already scrambled? Use the <b>Solve</b> tab instead: scan your cube and get coached through solving it.</p>
     <div class="btn-row" style="margin-top:10px"><button class="btn" style="flex:1" data-action="close-sheet">Got it</button></div>`);
@@ -2742,6 +2840,10 @@ const actions = {
   pad: el => cube.onUserMove?.(el.dataset.move),
   'reset-view': () => cube.setView(cube.view),
   settings: settingsSheet,
+  algs: algSheet,
+  'alg-watch': el => { closeSheet(); location.hash = `lesson/${el.dataset.id}/${el.dataset.page}`; },
+  follow: el => { followCtl.open(el.dataset.src); },
+  'follow-step': el => followCtl.go(+el.dataset.d),
   'close-sheet': closeSheet,
   'toggle-notation': el => {
     store.set('notation', !store.get('notation'));
