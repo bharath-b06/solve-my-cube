@@ -1209,6 +1209,10 @@ class Cube3D {
     const bodyGeo = new RoundedBoxGeometry(0.97, 0.97, 0.97, 3, 0.11);
     const bodyMat = new THREE.MeshStandardMaterial({ color: 0x1b1925, roughness: 0.6 });
     const stickerGeo = roundedSquare(0.8, 0.14);
+    // A pink frame behind each sticker, shown around the piece you're working on
+    const ringGeo = roundedSquare(1.0, 0.22);
+    this.ringMat = new THREE.MeshBasicMaterial({ color: ARROW_COLOR, transparent: true });
+    this.rings = [];
     this.cubies = [];
     this.stickerMeshes = [];
     const zAxis = new THREE.Vector3(0, 0, 1);
@@ -1227,6 +1231,12 @@ class Cube3D {
         m.quaternion.setFromUnitVectors(zAxis, n);
         m.userData = { cubie: g, n: s.n };
         this.stickerMeshes[i] = m;
+        const ring = new THREE.Mesh(ringGeo, this.ringMat);
+        ring.position.copy(n).multiplyScalar(0.4876);
+        ring.quaternion.copy(m.quaternion);
+        ring.visible = false;
+        this.rings[i] = ring;
+        g.add(ring);
         g.add(m);
       });
       this.root.add(g);
@@ -1299,26 +1309,40 @@ class Cube3D {
     this.state = state.slice();
     this.normalize();
   }
-  setFocus(colorSets) { this.focus = colorSets && colorSets.length ? colorSets : null; this.recolor(); }
+  // colorSets: pieces to keep bright (others are dimmed). emphasis: pieces to also outline in pink.
+  setFocus(colorSets, emphasis = null) {
+    this.focus = colorSets && colorSets.length ? colorSets : null;
+    this.emphasis = emphasis && emphasis.length ? emphasis : null;
+    this.recolor();
+  }
   normalize() {
     for (const g of this.cubies) { g.position.set(...g.userData.pos); g.quaternion.identity(); }
     this.recolor();
   }
   recolor() {
-    let keep = null;
-    if (this.focus) {
-      keep = new Set();
-      for (const cs of this.focus) {
+    const stickersOf = sets => {
+      if (!sets) return null;
+      const out = new Set();
+      for (const cs of sets) {
         const p = cs.length === 1
           ? PIECES.find(q => q.type === 'center' && this.state[q.stickers[0]] === cs[0])
           : findPiece(this.state, cs);
-        if (p) p.stickers.forEach(i => keep.add(i));
+        if (p) p.stickers.forEach(i => out.add(i));
       }
-    }
-    const dim = new THREE.Color(document.documentElement.dataset.dark === '1' ? 0x34304f : 0x4a4658);
+      return out;
+    };
+    const emph = stickersOf(this.emphasis);
+    let keep = stickersOf(this.focus);
+    if (keep && emph) emph.forEach(i => keep.add(i));
+    const dim = new THREE.Color(document.documentElement.dataset.dark === '1' ? 0x2c2944 : 0x3d3a4c);
     this.stickerMeshes.forEach((m, i) => {
-      m.material.color.set(COLOR_HEX[this.state[i]]);
-      if (keep && !keep.has(i)) m.material.color.lerp(dim, 0.8);
+      const mat = m.material;
+      mat.color.set(COLOR_HEX[this.state[i]]);
+      mat.emissive.setRGB(0, 0, 0);
+      if (keep && !keep.has(i)) mat.color.lerp(dim, 0.88);
+      // lift highlighted stickers so white reads as white, not grey
+      else if (keep) mat.emissive.copy(mat.color).multiplyScalar(0.36);
+      this.rings[i].visible = !!emph?.has(i);
     });
   }
 
@@ -1508,6 +1532,7 @@ class Cube3D {
       if (p >= 1) this.camAnim = null;
     }
     if (this.arrow) this.arrow.userData.mat.opacity = 0.7 + 0.3 * Math.sin(t / 140);
+    if (this.emphasis) this.ringMat.opacity = 0.55 + 0.45 * Math.sin(t / 220);
     if (!this.camAnim) this.controls.update();
     else this.camera.lookAt(0, 0, 0);
     if (this.wrap.isConnected && this.wrap.clientWidth) this.renderer.render(this.scene, this.camera);
@@ -1659,6 +1684,22 @@ const LESSONS = [
     { type: 'steps', stage: 'pll', title: 'Solve it!' },
   ] },
 ];
+
+// Which pieces stay bright during a stage's steps; the piece being worked on gets the pink outline
+function stageContext(stageId) {
+  switch (stageId) {
+    case 'daisy': return [...WHITE_EDGES, ['Y']];
+    case 'cross': return [...WHITE_EDGES, ['W'], ['G'], ['O'], ['R'], ['B']];
+    case 'corners': return [...WHITE_EDGES, ...WHITE_CORNERS];
+    case 'middle': return [...WHITE_EDGES, ...WHITE_CORNERS, ...MID_EDGES];
+    default: return null;
+  }
+}
+function focusStep(step, stageId) {
+  if (!step) return cube.setFocus(null);
+  const ctx = stageContext(stageId);
+  cube.setFocus(ctx || step.focus || null, step.focus || null);
+}
 
 // ---------- The example cube used across lessons ----------
 let example = null;
@@ -1907,7 +1948,7 @@ const lessonCtl = {
   },
   applyMode() {
     const step = this.steps[this.stepIdx];
-    cube.setFocus(step?.focus || null);
+    focusStep(step, this.page.stage);
     const tryMode = this.mode === 'try' && !this.finished;
     cube.inputEnabled = tryMode;
     cube.onUserMove = tryMode ? (tok, fits) => this.userMove(tok, fits) : null;
@@ -2005,7 +2046,7 @@ const lessonCtl = {
       // move straight on to the next step, paused, so the next ▶ plays it
       this.stepIdx++;
       this.moveIdx = 0;
-      cube.setFocus(this.steps[this.stepIdx].focus || null);
+      focusStep(this.steps[this.stepIdx], this.page.stage);
     }
     this.showNextArrow();
     this.renderSteps();
@@ -2059,7 +2100,7 @@ const lessonCtl = {
       if (this.stepIdx === this.steps.length - 1) return this.complete();
       this.stepIdx++;
       this.moveIdx = 0;
-      cube.setFocus(this.steps[this.stepIdx].focus || null);
+      focusStep(this.steps[this.stepIdx], this.page.stage);
       toast('Step done! Next one…', 1400);
     }
     this.renderSteps();
@@ -2635,7 +2676,7 @@ const solveCtl = {
     const now = this.coachState();
     const lab = moveLabel(cur.tok, now);
     const algBlock = step.alg ? `<div class="alg-card"><h4>${ALG_INFO[step.alg].name}${step.reps > 1 ? `<span class="count">× ${step.reps}</span>` : ''}</h4><div class="chips">${chipsHTML(splitAlg(ALG_INFO[step.alg].alg), S0)}</div></div>` : '';
-    cube.setFocus(step.focus || null);
+    focusStep(step, stage.id);
     if (!cube.busy) cube.showArrow(cur.tok);
     label.textContent = `Turn ${c.pos + 1} of ${c.flat.length}`;
     $('#solve-panel').innerHTML = `${head}${strip(cur.si)}
