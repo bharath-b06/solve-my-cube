@@ -2,8 +2,12 @@
 
 Interactive 3D website that teaches extreme beginners to solve a 3x3 Rubik's Cube with the layer-by-layer (daisy) method.
 
-**v1**
+**What's in it**
 - **Learn:** an intro lesson ("Meet your cube") plus 7 stages: daisy, white cross, white corners, middle layer, yellow cross, yellow face, finish the last layer. Each stage shows the goal, demos its algorithm on the 3D cube, then walks through a real example scramble step by step. You can **Watch** (animated, with a pink arrow and plain-language captions like "Right ↑") or **Try it** (you swipe the cube yourself; wrong moves are undone automatically).
+- **Solve (v2):** coach for your real cube.
+  - Scan each of the 6 sides with your phone's camera (live colour dots, then tap any sticker to fix it), or tap the colours in by hand. If the camera can't be opened, it falls back to entering colours by hand.
+  - Check: the full cube is shown flat and in 3D. It points out impossible cubes in plain language (wrong colour counts, impossible pieces, a flipped edge, twisted corner or swapped pieces) so you can find the misread sticker.
+  - Coach: one turn at a time with the same method as the lessons. The 3D cube shows the move with an arrow, you do it on your cube and tap the pink button. Includes "Back one turn", "Show me again", "I messed up" (rescan or re-enter from where your cube is now), and your place is saved if you leave.
 - **Play:** a free virtual cube. Swipe stickers to turn layers, scramble at five difficulty levels (Tiny 3 moves → Full 25 moves), undo, and a timer that starts on your first turn and stops when the cube is solved.
 - **Timer:** time solves on your real cube, with scrambles, best time, average of 5 and average of 12.
 - Lesson progress, times and settings are saved in this browser (localStorage). Standard move letters (R U R′ U′) can be switched on in Settings. Light and dark themes.
@@ -20,8 +24,4 @@ python3 -m http.server 8000
 
 Three.js 0.160 loads from the jsDelivr CDN, so you need an internet connection. To host it, turn on GitHub Pages for the `main` branch (root folder).
 
-## Roadmap (v2)
-
-- Scan your own cube with the phone camera, with tap-to-fix for misread stickers (plus manual entry)
-- Coach mode: solve your real cube step by step with the same method
-- Mistake recovery: "go back one move" and "I messed up, rescan"
+The camera needs HTTPS (GitHub Pages is fine) and permission to use the camera.

@@ -88,7 +88,7 @@ kbd, .mono { font-family: var(--font-mono); font-size: .9em; }
 
 /* ---------- Bottom nav ---------- */
 .bottomnav {
-  display: grid; grid-template-columns: repeat(3, 1fr);
+  display: grid; grid-template-columns: repeat(4, 1fr);
   background: var(--panel); border-top: 2px solid var(--line);
   padding: 6px 12px max(6px, env(safe-area-inset-bottom));
 }
@@ -239,6 +239,13 @@ main { position: relative; overflow: hidden; min-height: 0; }
 .try-hint b { color: var(--accent); }
 .big-next { display: flex; align-items: center; gap: 12px; width: 100%; margin-top: 0; padding: 12px; border-radius: 16px; border: 2px solid var(--pop); background: color-mix(in srgb, var(--pop) 8%, var(--panel)); box-shadow: 0 4px 0 color-mix(in srgb, var(--pop) 55%, transparent); text-align: left; font: inherit; color: inherit; transition: transform .08s, box-shadow .08s; }
 .big-next:active { transform: translateY(3px); box-shadow: 0 1px 0 color-mix(in srgb, var(--pop) 55%, transparent); }
+.coach-foot { gap: 8px; align-items: stretch; }
+.coach-foot .big-next { flex: 1; min-width: 0; padding: 10px; }
+.mini-col { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; flex: none; }
+.mini-col small { font: 600 11px var(--font-display); color: var(--ink-soft); }
+.coach-foot .mini-col .btn.round { flex: none; width: 46px; height: 46px; min-height: 46px; }
+#view-solve.editing .stage { flex: 0 0 30%; min-height: 170px; }
+@media (min-width: 900px) { #view-solve.editing .stage { flex: 1 1 auto; } }
 .big-next-text { margin-left: auto; text-align: right; font-size: 13px; color: var(--ink-soft); }
 .big-next-text b { display: block; color: var(--pop); font: 600 15px var(--font-display); margin-top: 2px; }
 .big-next .chip { font-size: 17px; padding: 8px 14px 8px 10px; }
@@ -347,6 +354,67 @@ details.pad-wrap summary::-webkit-details-marker { display: none; }
 .shake { animation: shake .35s; }
 .loading { position: absolute; inset: 0; display: grid; place-items: center; color: var(--ink-soft); font: 600 15px var(--font-display); text-align: center; padding: 20px; }
 
+/* ---------- Solve ---------- */
+#scan-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: none; z-index: 1; background: #000; }
+.stage.scanning #scan-video { display: block; }
+.stage.scanning .stage-tools { display: none; }
+.stage.flash::after { content: ""; position: absolute; inset: 0; background: #fff; z-index: 4; animation: flash .25s ease-out forwards; }
+@keyframes flash { from { opacity: .8; } to { opacity: 0; } }
+.scan-guide { position: absolute; inset: 0; z-index: 2; display: grid; place-items: center; pointer-events: none; }
+.scan-guide[hidden] { display: none; }
+.scan-grid { width: var(--g, 240px); height: var(--g, 240px); display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; padding: 6px; border-radius: 18px; border: 3px solid #fff; box-shadow: 0 0 0 9999px rgba(10, 6, 25, .45); }
+.scan-grid i { border-radius: 10px; border: 2px solid rgba(255,255,255,.75); position: relative; }
+.scan-grid i::after { content: ""; position: absolute; left: 50%; top: 50%; width: 30%; height: 30%; transform: translate(-50%, -50%); border-radius: 50%; background: var(--c, transparent); border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.45); }
+.scan-grid.frozen i { background: var(--c); border-color: #17151F; }
+.scan-grid.frozen i::after { display: none; }
+.choice-list { display: grid; gap: 10px; margin-top: 12px; }
+.choice { display: flex; align-items: center; gap: 14px; text-align: left; width: 100%; padding: 14px; border-radius: 18px; border: 2px solid var(--line-strong); background: var(--panel); box-shadow: 0 4px 0 var(--line-strong); }
+.choice:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--line-strong); }
+.choice b { display: block; font: 600 17px var(--font-display); }
+.choice small { color: var(--ink-soft); font-size: 14px; line-height: 1.35; display: block; margin-top: 2px; }
+.choice-ic { width: 48px; height: 48px; border-radius: 14px; background: var(--accent-soft); display: grid; place-items: center; font-size: 24px; flex: none; }
+.resume-card { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 16px; background: var(--accent-soft); margin-bottom: 14px; }
+.resume-card b { display: block; font: 600 16px var(--font-display); }
+.resume-card small { color: var(--ink-soft); }
+.resume-card .btn { margin-left: auto; }
+.face-row { display: flex; gap: 12px; align-items: center; }
+.face-row p { margin: 0; font-size: 15px; }
+.face-mini { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: none; }
+.top-tag { font: 600 11px var(--font-display); padding: 2px 8px; border-radius: 99px; background: var(--c); color: #23203A; box-shadow: inset 0 0 0 1.5px rgba(0,0,0,.15); white-space: nowrap; }
+.mini-sq { width: 40px; height: 40px; border-radius: 10px; box-shadow: inset 0 0 0 3px rgba(0,0,0,.18); }
+.face-wrap { display: flex; justify-content: center; margin: 10px 0 6px; }
+.face-edit { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; padding: 8px; border-radius: 18px; background: #17151F; width: min(190px, 50vw); }
+.fcell { aspect-ratio: 1; border: 0; border-radius: 10px; background: var(--c); padding: 0; box-shadow: inset 0 -3px 0 rgba(0,0,0,.18); transition: transform .1s; }
+.fcell.center { cursor: default; box-shadow: inset 0 0 0 3px rgba(255,255,255,.35); }
+.fcell.sel, .ncell.sel { outline: 3px solid var(--pop); outline-offset: 2px; transform: scale(1.04); }
+.fcell.blank, .ncell.blank { background: repeating-linear-gradient(45deg, #6E6A7C, #6E6A7C 4px, #8E8A9C 4px, #8E8A9C 8px); }
+.hint { font-size: 13px; color: var(--ink-soft); text-align: center; margin: 2px 0 6px; line-height: 1.35; }
+.palette { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; margin-top: 8px; }
+.palette button { border: 2px solid var(--line-strong); background: var(--panel); border-radius: 13px; padding: 6px 2px; display: flex; flex-direction: column; align-items: center; gap: 3px; box-shadow: 0 3px 0 var(--line-strong); }
+.palette button i { width: 28px; height: 28px; border-radius: 8px; box-shadow: inset 0 0 0 2px rgba(0,0,0,.15); }
+.palette button small { font: 600 11px var(--font-mono); color: var(--ink-soft); }
+.palette button small.ok { color: var(--good); }
+.palette button small.over { color: var(--pop); }
+.palette button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); transform: translateY(2px); box-shadow: 0 1px 0 var(--accent); }
+.warn-box { background: color-mix(in srgb, var(--warn) 14%, var(--panel)); border: 2px solid color-mix(in srgb, var(--warn) 45%, transparent); border-radius: 14px; padding: 10px 12px; font-size: 14px; margin-top: 12px; }
+.warn-box p { margin: 0 0 6px; }
+.ok-box { background: var(--good-soft); color: var(--good); border-radius: 14px; padding: 10px 12px; font: 600 15px var(--font-display); margin-top: 12px; }
+.net { --s: min(26px, calc((100vw - 76px) / 12)); display: grid; grid-template-areas: ". U . ." "L F R B" ". D . ."; grid-template-columns: repeat(4, auto); gap: 4px; justify-content: center; margin: 12px 0 4px; }
+.net-face { display: grid; grid-template-columns: repeat(3, var(--s)); gap: 2px; padding: 3px; background: #17151F; border-radius: 8px; }
+.ncell { width: var(--s); height: var(--s); border: 0; border-radius: 4px; background: var(--c); padding: 0; }
+.ncell.center { cursor: default; }
+.ncell.bad { outline: 3px solid var(--pop); outline-offset: 1px; animation: pulse 1s infinite alternate; }
+@keyframes pulse { to { outline-color: transparent; } }
+.dots .dot-static { width: 8px; height: 8px; border-radius: 99px; background: var(--line-strong); }
+.dots .dot-static.on { width: 22px; background: var(--accent); }
+.dots .dot-static.seen { background: color-mix(in srgb, var(--accent) 45%, var(--line-strong)); }
+.stage-strip { display: flex; gap: 6px; overflow-x: auto; padding: 2px 16px 8px; scrollbar-width: none; }
+.stage-strip span { flex: none; font: 600 12px var(--font-display); padding: 4px 10px; border-radius: 99px; background: var(--panel-2); color: var(--ink-soft); }
+.stage-strip span.done { background: var(--good-soft); color: var(--good); }
+.stage-strip span.now { background: var(--accent); color: #fff; }
+.tips li[data-i="💡"]::before, .tips li[data-i="🎯"]::before { background: none; font-size: 16px; }
+@media (min-width: 900px) { .net { --s: 26px; } }
+
 /* ---------- Desktop ---------- */
 @media (min-width: 900px) {
   body { grid-template-rows: auto 1fr; }
@@ -407,6 +475,17 @@ details.pad-wrap summary::-webkit-details-marker { display: none; }
       <div class="timer-chip" id="play-timer"></div>
     </div>
     <div class="panel" id="play-panel"></div>
+  </section>
+  <section class="view split" id="view-solve" aria-label="Solve my cube">
+    <div class="stage" id="solve-stage">
+      <video id="scan-video" playsinline muted autoplay></video>
+      <div class="scan-guide" id="scan-guide" hidden><div class="scan-grid"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+      <div class="stage-label" id="solve-stage-label"></div>
+      <div class="stage-tools">
+        <button class="icon-btn" data-action="reset-view" aria-label="Reset the view"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg></button>
+      </div>
+    </div>
+    <div class="panel" id="solve-panel"></div>
   </section>
   <section class="view scroll" id="view-timer" aria-label="Timer"></section>
 </main>
@@ -832,6 +911,176 @@ function solveLBL(start) {
   stages.forEach((st, i) => { st.end = (stages[i + 1] || { start: s }).start; });
   return stages;
 }
+// ---------- Checking a scanned cube ----------
+const OPPOSITE = { Y: 'W', W: 'Y', G: 'B', B: 'G', R: 'O', O: 'R' };
+// The 24 ways a solved cube can be held
+const ORIENTATIONS = (() => {
+  const out = [], seen = new Set();
+  for (const a of ['', 'x', 'x2', "x'", 'z', "z'"]) for (const b of ['', 'y', 'y2', "y'"]) {
+    const st = applyAlg(solvedState(), [a, b].filter(Boolean));
+    const key = FACES.map(f => center(st, f)).join('');
+    if (!seen.has(key)) { seen.add(key); out.push(st); }
+  }
+  return out;
+})();
+const pieceKey = colors => [...colors].sort().join('');
+const dot3 = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+const cross3 = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+// Corner stickers starting with the U/D sticker, in a consistent turning order
+function cornerOrder(piece) {
+  const ud = piece.stickers.find(i => 'UD'.includes(STICKERS[i].face));
+  const [a, b] = piece.stickers.filter(i => i !== ud);
+  return dot3(STICKERS[ud].n, cross3(STICKERS[a].n, STICKERS[b].n)) > 0 ? [ud, a, b] : [ud, b, a];
+}
+const edgeRef = piece => piece.stickers.find(i => 'UD'.includes(STICKERS[i].face)) ?? piece.stickers.find(i => 'FB'.includes(STICKERS[i].face));
+function permParity(perm) {
+  let parity = 0;
+  const seen = new Array(perm.length).fill(false);
+  for (let i = 0; i < perm.length; i++) {
+    if (seen[i]) continue;
+    let len = 0;
+    for (let j = i; !seen[j]; j = perm[j]) { seen[j] = true; len++; }
+    parity ^= (len - 1) & 1;
+  }
+  return parity;
+}
+const listColors = cs => cs.map(c => COLOR_NAMES[c]).join(', ').replace(/, ([^,]*)$/, ' and $1');
+
+// Returns { ok, errors: [plain-language messages], bad: [sticker indices to point at] }
+function validateState(s) {
+  const bad = new Set();
+  const blank = s.map((c, i) => (OPPOSITE[c] ? -1 : i)).filter(i => i >= 0);
+  if (blank.length) return { ok: false, errors: [`${blank.length} sticker${blank.length === 1 ? ' is' : 's are'} still blank. Fill in every sticker.`], bad: blank };
+  const counts = {};
+  s.forEach(c => { counts[c] = (counts[c] || 0) + 1; });
+  const off = Object.keys(OPPOSITE).filter(c => counts[c] !== 9);
+  if (off.length) {
+    const parts = off.map(c => `${counts[c] || 0} ${COLOR_NAMES[c]}`);
+    return { ok: false, errors: [`Each colour should appear 9 times. Right now there are ${listColors(parts)}. Look for a sticker that was read as the wrong colour: red and orange are easy to mix up, and so are white and yellow.`], bad: [] };
+  }
+  const ref = ORIENTATIONS.find(o => FACES.every(f => center(o, f) === center(s, f)));
+  if (!ref) return { ok: false, errors: ['The six centers don’t match a standard cube (yellow opposite white, green opposite blue, red opposite orange). Check you scanned each side with the right colour on top.'], bad: [4, 13, 22, 31, 40, 49] };
+  const home = new Map();
+  PIECES.filter(p => p.type !== 'center').forEach(p => home.set(pieceKey(colorsOf(ref, p)), p));
+  const errors = [];
+  const seen = new Map();
+  for (const p of PIECES.filter(q => q.type !== 'center')) {
+    const cs = colorsOf(s, p);
+    const k = pieceKey(cs);
+    if (!home.has(k)) {
+      p.stickers.forEach(i => bad.add(i));
+      errors.push(`One ${p.type} has ${listColors(cs)} together, and no real piece has those colours.`);
+    } else if (seen.has(k)) {
+      [...p.stickers, ...seen.get(k).stickers].forEach(i => bad.add(i));
+      errors.push(`Two ${p.type}s both have ${listColors(cs)}. There is only one of those.`);
+    }
+    seen.set(k, p);
+  }
+  if (errors.length) return { ok: false, errors: [...new Set(errors)], bad: [...bad] };
+  const edges = PIECES.filter(p => p.type === 'edge'), corners = PIECES.filter(p => p.type === 'corner');
+  let flips = 0, twists = 0;
+  const edgePerm = edges.map(p => {
+    const h = home.get(pieceKey(colorsOf(s, p)));
+    if (s[edgeRef(p)] !== ref[edgeRef(h)]) flips++;
+    return edges.indexOf(h);
+  });
+  const cornerPerm = corners.map(p => {
+    const h = home.get(pieceKey(colorsOf(s, p)));
+    const primary = ref[cornerOrder(h)[0]];
+    twists += cornerOrder(p).findIndex(i => s[i] === primary);
+    return corners.indexOf(h);
+  });
+  if (flips % 2) errors.push('It looks like one edge is flipped: its two colours are the wrong way round.');
+  if (twists % 3) errors.push('It looks like one corner is twisted: its colours are turned round the wrong way.');
+  if (permParity(edgePerm) !== permParity(cornerPerm)) errors.push('It looks like two pieces have swapped places.');
+  if (errors.length) errors.push('This almost always means a sticker was read as the wrong colour. Compare each side with your cube. (If someone took the cube apart or peeled a sticker, it really can’t be solved this way.)');
+  return { ok: !errors.length, errors, bad: [] };
+}
+
+// ---------- Camera colour helpers ----------
+function rgbToHsv([r, g, b]) {
+  r /= 255; g /= 255; b /= 255;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b), d = max - min;
+  let h = 0;
+  if (d) h = max === r ? ((g - b) / d) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4;
+  return [(h * 60 + 360) % 360, max ? d / max : 0, max];
+}
+function rgbToLab([r, g, b]) {
+  const lin = v => { v /= 255; return v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+  const R = lin(r), G = lin(g), B = lin(b);
+  const f = t => (t > 0.008856 ? Math.cbrt(t) : 7.787 * t + 16 / 116);
+  const x = f((R * 0.4124 + G * 0.3576 + B * 0.1805) / 0.95047), y = f(R * 0.2126 + G * 0.7152 + B * 0.0722), z = f((R * 0.0193 + G * 0.1192 + B * 0.9505) / 1.08883);
+  return [116 * y - 16, 500 * (x - y), 200 * (y - z)];
+}
+// First guess from hue alone, used while the camera is live
+function guessColor(rgb) {
+  const [h, s, v] = rgbToHsv(rgb);
+  if (s < 0.28 && v > 0.35) return 'W';
+  if (h < 14 || h >= 330) return 'R';
+  if (h < 42) return 'O';
+  if (h < 75) return 'Y';
+  if (h < 170) return 'G';
+  if (h < 265) return 'B';
+  return 'R';
+}
+// Once all six sides are in: if the colour counts are off, re-read every sticker the person
+// hasn't fixed by hand, using the six scanned centers as colour references (9 of each).
+function refineColors(state, samples, locked) {
+  const counts = {};
+  state.forEach(c => { counts[c] = (counts[c] || 0) + 1; });
+  if (Object.keys(OPPOSITE).every(c => counts[c] === 9)) return state.slice();
+  const refs = {};
+  FACES.forEach((f, fi) => { const i = fi * 9 + 4; if (samples[i]) refs[state[i]] = rgbToLab(samples[i]); });
+  if (Object.keys(refs).length < 6) return state.slice();
+  const out = state.slice();
+  const left = { ...Object.fromEntries(Object.keys(OPPOSITE).map(c => [c, 9])) };
+  const free = [];
+  state.forEach((c, i) => { if (locked[i] || i % 9 === 4 || !samples[i]) left[c]--; else free.push(i); });
+  // Brightness changes a lot across a face (shadows, glare), so it counts for less than hue
+  const dist = (lab, r) => Math.hypot((lab[0] - r[0]) * 0.5, lab[1] - r[1], lab[2] - r[2]);
+  const labs = new Map(free.map(i => [i, rgbToLab(samples[i])]));
+  const nearest = i => Object.keys(refs).reduce((a, c) => (dist(labs.get(i), refs[c]) < dist(labs.get(i), refs[a]) ? c : a));
+  // 1) each sticker takes its closest center colour
+  free.forEach(i => { out[i] = nearest(i); });
+  const tally = { ...left };
+  free.forEach(i => { tally[out[i]]--; });
+  if (Object.values(tally).every(n => n === 0)) return out;
+  // 2) still not 9 of each: find the best overall assignment with exactly the colours left
+  const slots = Object.keys(left).flatMap(c => Array(Math.max(0, left[c])).fill(c));
+  if (slots.length !== free.length) return out;
+  const cost = free.map(i => slots.map(c => dist(labs.get(i), refs[c])));
+  hungarian(cost).forEach((j, k) => { out[free[k]] = slots[j]; });
+  return out;
+}
+// Minimum-cost assignment for a square cost matrix; returns the column chosen for each row
+function hungarian(cost) {
+  const n = cost.length, INF = 1e18;
+  const u = new Array(n + 1).fill(0), v = new Array(n + 1).fill(0), p = new Array(n + 1).fill(0), way = new Array(n + 1).fill(0);
+  for (let i = 1; i <= n; i++) {
+    p[0] = i;
+    let j0 = 0;
+    const minv = new Array(n + 1).fill(INF), used = new Array(n + 1).fill(false);
+    do {
+      used[j0] = true;
+      const i0 = p[j0];
+      let delta = INF, j1 = 0;
+      for (let j = 1; j <= n; j++) {
+        if (used[j]) continue;
+        const cur = cost[i0 - 1][j - 1] - u[i0] - v[j];
+        if (cur < minv[j]) { minv[j] = cur; way[j] = j0; }
+        if (minv[j] < delta) { delta = minv[j]; j1 = j; }
+      }
+      for (let j = 0; j <= n; j++) {
+        if (used[j]) { u[p[j]] += delta; v[j] -= delta; } else minv[j] -= delta;
+      }
+      j0 = j1;
+    } while (p[j0] !== 0);
+    do { const j1 = way[j0]; p[j0] = p[j1]; j0 = j1; } while (j0);
+  }
+  const ans = new Array(n);
+  for (let j = 1; j <= n; j++) if (p[j]) ans[p[j] - 1] = j - 1;
+  return ans;
+}
 // ==CORE END==
 
 // ---------- Settings and saved progress (this browser only) ----------
@@ -847,7 +1096,7 @@ const store = (() => {
 })();
 
 const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
-const COLOR_HEX = { Y: '#FFD52E', O: '#FF7A1A', G: '#12B76A', W: '#F7F7F2', R: '#E5383B', B: '#2B6FF0' };
+const COLOR_HEX = { Y: '#FFD52E', O: '#FF7A1A', G: '#12B76A', W: '#F7F7F2', R: '#E5383B', B: '#2B6FF0', '?': '#8E8A9C' };
 const $ = (sel, root = document) => root.querySelector(sel);
 const pretty = tok => tok.replace(/'/g, '′');
 const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
@@ -1001,7 +1250,12 @@ class Cube3D {
     else this.controls.maxDistance = Math.max(30, this.fitDist * 1.6);
   }
   viewDir(name) {
-    return name === 'bottom' ? new THREE.Vector3(0.55, -0.55, 0.78).normalize() : new THREE.Vector3(0.55, 0.5, 0.8).normalize();
+    const dirs = {
+      top: [0.55, 0.5, 0.8], bottom: [0.55, -0.55, 0.78],
+      // looking straight at one side, the way it's held while scanning
+      F: [0.2, 0.28, 1], R: [1, 0.28, 0.2], B: [-0.2, 0.28, -1], L: [-1, 0.28, -0.2], U: [0, 1, 0.42], D: [0, -1, 0.42],
+    };
+    return new THREE.Vector3(...(dirs[name] || dirs.top)).normalize();
   }
   setView(name = this.view, instant = false) {
     this.view = name;
@@ -1407,6 +1661,7 @@ function newExample() {
 const ICONS = {
   learn: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6.5 12 3l9 3.5-9 3.5z"/><path d="M7 8.5v5c0 1.5 2.2 3 5 3s5-1.5 5-3v-5"/><path d="M21 6.5V12"/></svg>',
   play: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M12 2.8 20.5 7.5v9L12 21.2 3.5 16.5v-9z"/><path d="M3.5 7.5 12 12l8.5-4.5M12 12v9.2"/></svg>',
+  solve: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8.5A1.5 1.5 0 0 1 5.5 7h2l1.5-2.2h6L16.5 7h2A1.5 1.5 0 0 1 20 8.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 17.5z"/><circle cx="12" cy="12.8" r="3.4"/></svg>',
   timer: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="13.5" r="7.5"/><path d="M12 13.5V9.5M9.5 2.8h5M18.5 6.5l1.5-1.5"/></svg>',
   back: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m15 5-7 7 7 7"/></svg>',
   playIcon: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg>',
@@ -1417,7 +1672,7 @@ const ICONS = {
   undo: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>',
   shuffle: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg>',
 };
-const TABS = [['learn', 'Learn'], ['play', 'Play'], ['timer', 'Timer']];
+const TABS = [['learn', 'Learn'], ['solve', 'Solve'], ['play', 'Play'], ['timer', 'Timer']];
 function renderTabs(active) {
   const html = TABS.map(([id, label]) => `<button class="tab" data-action="tab" data-tab="${id}" ${active === id ? 'aria-current="page"' : ''}>${ICONS[id]}<span>${label}</span></button>`).join('');
   $('.bottomnav').innerHTML = html;
@@ -1495,8 +1750,10 @@ function route() {
   const [name, arg, arg2] = h.split('/');
   lessonCtl.leave();
   playCtl.leave();
+  solveCtl.leave();
   if (name === 'lesson' && LESSONS.some(l => l.id === arg)) { show('lesson'); lessonCtl.open(arg, +arg2 || 0); }
   else if (name === 'play') { show('play'); playCtl.enter(); }
+  else if (name === 'solve') { show('solve'); solveCtl.enter(); }
   else if (name === 'timer') { show('timer'); timerCtl.render(); }
   else { show('learn'); renderLearn(); }
 }
@@ -1526,7 +1783,7 @@ function renderLearn() {
           <span><h3>${l.title}</h3><p>${l.blurb}</p></span>${st}</button>`;
       }).join('')}
     </div>
-    <p class="note">Method: the beginner layer-by-layer (daisy) method. Your progress is saved in this browser only. Coming next: scan your own cube with your camera and get coached through solving it.</p>
+    <p class="note">Method: the beginner layer-by-layer (daisy) method. Your progress is saved in this browser only. Have a scrambled cube? Open <b>Solve</b> to scan it and get coached through it, turn by turn.</p>
   </div>`;
 }
 
@@ -1984,6 +2241,437 @@ const timerCtl = {
   },
 };
 
+// ----- Solve my cube: scan or enter colours, check, then coach -----
+const FACE_STEPS = [
+  { face: 'F', center: 'G', top: 'Y', text: 'Hold the cube with <b>yellow on top</b> and the <b>green</b> center facing {cam}.' },
+  { face: 'R', center: 'O', top: 'Y', text: 'Turn the whole cube a quarter turn to the left, so <b>orange</b> faces {cam}. Yellow stays on top.' },
+  { face: 'B', center: 'B', top: 'Y', text: 'Another quarter turn to the left: <b>blue</b> faces {cam}, yellow still on top.' },
+  { face: 'L', center: 'R', top: 'Y', text: 'One more quarter turn: <b>red</b> faces {cam}, yellow on top.' },
+  { face: 'U', center: 'Y', top: 'B', text: 'Turn back so green faces you, then tip the top toward you so <b>yellow</b> faces {cam}. Blue is now on top.' },
+  { face: 'D', center: 'W', top: 'G', text: 'Turn back again, then tip the bottom toward you so <b>white</b> faces {cam}. Green is now on top.' },
+];
+const STAGE_NAMES = { daisy: 'Daisy', cross: 'White cross', corners: 'White corners', middle: 'Middle layer', ycross: 'Yellow cross', yface: 'Yellow face', pll: 'Finish' };
+const PALETTE = ['W', 'Y', 'G', 'B', 'R', 'O'];
+const faceIndex = f => FACES.indexOf(f);
+function blankCube() {
+  const s = Array(54).fill('?');
+  FACES.forEach((f, fi) => { s[fi * 9 + 4] = HOME_COLORS[f]; });
+  return s;
+}
+
+const solveCtl = {
+  screen: 'home', mode: 'camera', faceIdx: 0, facelets: blankCube(), samples: [], locked: [], captured: false, centerWarn: null,
+  paint: null, selected: null, stream: null, timer: 0, live: null, coach: null, ready: false, busy: false,
+
+  enter() {
+    cube.mount($('#solve-stage'));
+    cube.inputEnabled = false;
+    cube.onUserMove = null;
+    cube.setFocus(null);
+    if (this.screen === 'coach' && !this.coach) this.screen = 'home';
+    if (this.screen === 'face' && this.mode === 'camera') { this.screen = 'home'; }
+    this.show();
+  },
+  leave() {
+    if (app.view !== 'solve' || !cube) return;
+    this.stopCamera();
+    cube.stop();
+  },
+  setEditing() {
+    const on = this.screen === 'review' || (this.screen === 'face' && (this.mode === 'manual' || this.captured));
+    $('#view-solve').classList.toggle('editing', on);
+  },
+  show() {
+    const label = $('#solve-stage-label');
+    label.textContent = '';
+    if (this.screen === 'home') { cube.setFocus(null); cube.setView('top'); cube.setState(this.coach ? this.coachState() : S0); this.renderHome(); }
+    else if (this.screen === 'face') this.renderFace();
+    else if (this.screen === 'review') { cube.setView('top'); cube.setState(this.facelets); this.renderReview(); }
+    else if (this.screen === 'coach') this.renderCoach();
+  },
+
+  // ----- home -----
+  renderHome() {
+    this.setEditing();
+    const saved = store.get('coach');
+    const resume = saved && saved.pos > 0 ? `<div class="resume-card"><div><b>You’re part-way through a solve</b><small>Move ${saved.pos} of ${saved.total || '…'}</small></div><button class="btn small" data-action="coach-resume">Continue</button></div>` : '';
+    $('#solve-panel').innerHTML = `
+      <div class="panel-head"><h2>Solve my cube</h2></div>
+      <div class="panel-body">
+        ${resume}
+        <p>Show me your scrambled cube and I’ll coach you through solving it, one turn at a time, with the same method as the lessons.</p>
+        <div class="choice-list">
+          <button class="choice" data-action="scan-start" data-mode="camera"><span class="choice-ic">📷</span><span><b>Scan with the camera</b><small>Show each of the 6 sides to your camera. You can fix any colour it gets wrong.</small></span></button>
+          <button class="choice" data-action="scan-start" data-mode="manual"><span class="choice-ic">✋</span><span><b>Enter the colours by hand</b><small>Tap in the colours of each side yourself.</small></span></button>
+        </div>
+        <ul class="tips" style="margin-top:16px"><li data-i="💡">Scan in bright, even light. Avoid shiny reflections on the stickers.</li><li data-i="🎯">Hold the cube close so one side fills the square.</li></ul>
+      </div>`;
+  },
+
+  // ----- scanning / entering one side at a time -----
+  async start(mode) {
+    this.mode = mode;
+    this.faceIdx = 0;
+    this.facelets = blankCube();
+    this.samples = [];
+    this.locked = [];
+    this.captured = false;
+    this.centerWarn = null;
+    this.selected = null;
+    this.paint = mode === 'manual' ? 'W' : null;
+    this.screen = 'face';
+    if (mode === 'camera') {
+      try {
+        await this.startCamera();
+      } catch (err) {
+        console.warn(err);
+        this.mode = 'manual';
+        this.paint = 'W';
+        toast('Couldn’t open the camera, so you can tap the colours in instead.', 3600);
+      }
+    }
+    this.show();
+  },
+  async startCamera() {
+    if (!navigator.mediaDevices?.getUserMedia) throw new Error('Camera not available');
+    this.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false });
+    const v = $('#scan-video');
+    v.srcObject = this.stream;
+    await v.play();
+    $('#solve-stage').classList.add('scanning');
+    $('#scan-guide').hidden = false;
+    this.sizeGuide();
+    clearInterval(this.timer);
+    this.timer = setInterval(() => this.liveTick(), 160);
+  },
+  stopCamera() {
+    clearInterval(this.timer);
+    this.stream?.getTracks().forEach(t => t.stop());
+    this.stream = null;
+    $('#solve-stage').classList.remove('scanning');
+    $('#scan-guide').hidden = true;
+  },
+  sizeGuide() {
+    const st = $('#solve-stage');
+    const g = Math.round(Math.min(st.clientWidth, st.clientHeight) * 0.72);
+    $('#scan-guide').style.setProperty('--g', g + 'px');
+    return g;
+  },
+  // Average colour of the middle of each of the 9 squares inside the guide
+  sample() {
+    const v = $('#scan-video');
+    if (!v.videoWidth) return null;
+    const st = $('#solve-stage');
+    const W = st.clientWidth, H = st.clientHeight, g = this.sizeGuide();
+    const scale = Math.max(W / v.videoWidth, H / v.videoHeight);
+    const offX = (W - v.videoWidth * scale) / 2, offY = (H - v.videoHeight * scale) / 2;
+    const sx = ((W - g) / 2 - offX) / scale, sy = ((H - g) / 2 - offY) / scale, sw = g / scale;
+    this.canvas ||= document.createElement('canvas');
+    this.canvas.width = this.canvas.height = 90;
+    const ctx = this.canvas.getContext('2d', { willReadFrequently: true });
+    ctx.drawImage(v, sx, sy, sw, sw, 0, 0, 90, 90);
+    const d = ctx.getImageData(0, 0, 90, 90).data;
+    const out = [];
+    for (let r = 0; r < 3; r++) for (let c = 0; c < 3; c++) {
+      let R = 0, G = 0, B = 0, n = 0;
+      for (let y = r * 30 + 9; y < r * 30 + 21; y++) for (let x = c * 30 + 9; x < c * 30 + 21; x++) {
+        const k = (y * 90 + x) * 4;
+        R += d[k]; G += d[k + 1]; B += d[k + 2]; n++;
+      }
+      out.push([R / n, G / n, B / n]);
+    }
+    return out;
+  },
+  liveTick() {
+    if (this.screen !== 'face' || this.captured || this.mode !== 'camera') return;
+    const rgbs = this.sample();
+    if (!rgbs) return;
+    this.live = rgbs.map(guessColor);
+    const cells = document.querySelectorAll('#scan-guide .scan-grid i');
+    cells.forEach((el, k) => el.style.setProperty('--c', COLOR_HEX[this.live[k]]));
+    document.querySelectorAll('#face-edit .fcell').forEach((el, k) => { if (k !== 4) el.style.setProperty('--c', COLOR_HEX[this.live[k]]); });
+  },
+  capture() {
+    const rgbs = this.sample();
+    if (!rgbs) return toast('The camera isn’t ready yet');
+    const step = FACE_STEPS[this.faceIdx];
+    const fi = faceIndex(step.face);
+    rgbs.forEach((rgb, k) => {
+      const i = fi * 9 + k;
+      this.samples[i] = rgb;
+      this.facelets[i] = k === 4 ? step.center : guessColor(rgb);
+      this.locked[i] = false;
+    });
+    const seen = guessColor(rgbs[4]);
+    this.centerWarn = seen !== step.center ? seen : null;
+    this.captured = true;
+    this.selected = null;
+    $('#solve-stage').classList.add('flash');
+    setTimeout(() => $('#solve-stage').classList.remove('flash'), 250);
+    this.renderFace();
+  },
+  retake() {
+    this.captured = false;
+    this.centerWarn = null;
+    this.selected = null;
+    this.renderFace();
+  },
+  nextFace() {
+    if (this.faceIdx < FACE_STEPS.length - 1) {
+      this.faceIdx++;
+      this.captured = false;
+      this.centerWarn = null;
+      this.selected = null;
+      this.renderFace();
+      return;
+    }
+    if (this.mode === 'camera') {
+      this.facelets = refineColors(this.facelets, this.samples, this.locked);
+      this.stopCamera();
+    }
+    this.selected = null;
+    this.paint = null;
+    this.screen = 'review';
+    this.show();
+  },
+  prevFace() {
+    if (this.faceIdx === 0) { this.stopCamera(); this.screen = 'home'; this.show(); return; }
+    this.faceIdx--;
+    this.captured = this.mode === 'camera';
+    this.selected = null;
+    this.renderFace();
+  },
+  faceGridHTML(fi, editable) {
+    const cells = [];
+    for (let k = 0; k < 9; k++) {
+      const i = fi * 9 + k;
+      const c = this.facelets[i];
+      const cls = ['fcell', k === 4 ? 'center' : '', this.selected === i ? 'sel' : '', c === '?' ? 'blank' : ''].join(' ');
+      cells.push(`<button class="${cls}" ${editable && k !== 4 ? `data-action="cell" data-i="${i}"` : 'tabindex="-1"'} style="--c:${COLOR_HEX[c]}" aria-label="${k === 4 ? 'Center' : 'Sticker'} ${k + 1}: ${COLOR_NAMES[c] || 'blank'}"></button>`);
+    }
+    return cells.join('');
+  },
+  paletteHTML(withCounts) {
+    const counts = {};
+    this.facelets.forEach(c => { counts[c] = (counts[c] || 0) + 1; });
+    return `<div class="palette" role="group" aria-label="Colours">${PALETTE.map(c => `<button data-action="paint" data-c="${c}" aria-pressed="${this.paint === c}" aria-label="${COLOR_NAMES[c]}"><i style="background:${COLOR_HEX[c]}"></i>${withCounts ? `<small class="${counts[c] === 9 ? 'ok' : counts[c] > 9 ? 'over' : ''}">${counts[c] || 0}/9</small>` : ''}</button>`).join('')}</div>`;
+  },
+  renderFace() {
+    const step = FACE_STEPS[this.faceIdx];
+    const fi = faceIndex(step.face);
+    const cam = this.mode === 'camera';
+    const n = FACE_STEPS.length;
+    $('#solve-stage-label').textContent = cam ? (this.captured ? 'Got it! Check the colours below' : `Fill the square with the ${COLOR_NAMES[step.center]} side`) : `The ${COLOR_NAMES[step.center]} side`;
+    if (!cam) {
+      cube.setFocus(null);
+      cube.setState(this.facelets);
+      cube.setView(step.face);
+    } else {
+      const grid = $('#scan-guide .scan-grid');
+      grid.classList.toggle('frozen', this.captured);
+      grid.querySelectorAll('i').forEach((el, k) => el.style.setProperty('--c', this.captured ? COLOR_HEX[this.facelets[fi * 9 + k]] : 'transparent'));
+    }
+    const editable = !cam || this.captured;
+    this.setEditing();
+    const hint = cam && !this.captured
+      ? 'Line the side up with the square. When the dots match your stickers, tap <b>Capture</b>.'
+      : cam ? 'Does it match your cube? If a colour is wrong, tap that sticker, then tap the right colour.'
+        : 'Pick a colour, then tap the stickers to paint them. The middle is already filled in.';
+    const warn = this.centerWarn ? `<div class="warn-box">The middle looked ${COLOR_NAMES[this.centerWarn]}, not ${COLOR_NAMES[step.center]}. Make sure the ${COLOR_NAMES[step.center]} side is facing the camera, or tap Retake.</div>` : '';
+    const foot = cam && !this.captured
+      ? `<button class="btn ghost" data-action="face-prev">Back</button><button class="btn pop" data-action="capture">📸 Capture</button>`
+      : `<button class="btn ghost" data-action="${cam ? 'retake' : 'face-prev'}">${cam ? 'Retake' : 'Back'}</button><button class="btn" data-action="face-next">${this.faceIdx === n - 1 ? 'Check my cube' : 'Next side'}</button>`;
+    $('#solve-panel').innerHTML = `
+      <div class="panel-head"><button class="back" data-action="solve-home" aria-label="Back">${ICONS.back}</button><h2>${cam ? 'Scan' : 'Enter'} side ${this.faceIdx + 1} of ${n}</h2></div>
+      <div class="dots">${FACE_STEPS.map((_, i) => `<i class="dot-static ${i === this.faceIdx ? 'on' : i < this.faceIdx ? 'seen' : ''}"></i>`).join('')}</div>
+      <div class="panel-body">
+        <div class="face-row">
+          <div class="face-mini" aria-hidden="true"><span class="top-tag" style="--c:${COLOR_HEX[step.top]}">${cap(COLOR_NAMES[step.top])} on top</span><span class="mini-sq" style="background:${COLOR_HEX[step.center]}"></span></div>
+          <p>${step.text.replace('{cam}', cam ? 'the camera' : 'you')}</p>
+        </div>
+        ${warn}
+        <div class="face-wrap"><div class="face-edit" id="face-edit">${this.faceGridHTML(fi, editable)}</div></div>
+        <p class="hint">${hint}</p>
+        ${editable ? this.paletteHTML(false) : ''}
+      </div>
+      <div class="panel-foot">${foot}</div>`;
+    if (cam && !this.captured && this.live) this.liveTick();
+  },
+
+  // ----- editing -----
+  tapCell(i) {
+    if (this.paint) { this.setColor(i, this.paint); return; }
+    this.selected = this.selected === i ? null : i;
+    this.refreshEditor();
+  },
+  tapPaint(c) {
+    if (this.selected != null) { this.setColor(this.selected, c); this.selected = null; this.refreshEditor(); return; }
+    this.paint = this.paint === c ? null : c;
+    this.refreshEditor();
+  },
+  setColor(i, c) {
+    this.facelets[i] = c;
+    this.locked[i] = true;
+    if (this.screen === 'review' || this.mode === 'manual') cube.setState(this.facelets);
+    this.refreshEditor();
+  },
+  refreshEditor() {
+    if (this.screen === 'face') this.renderFace();
+    else if (this.screen === 'review') this.renderReview();
+  },
+
+  // ----- review the whole cube -----
+  renderReview() {
+    const v = validateState(this.facelets);
+    const bad = new Set(v.bad);
+    const face = f => {
+      const fi = faceIndex(f);
+      return `<div class="net-face" style="grid-area:${f}">${[...Array(9)].map((_, k) => {
+        const i = fi * 9 + k, c = this.facelets[i];
+        return `<button class="ncell ${k === 4 ? 'center' : ''} ${bad.has(i) ? 'bad' : ''} ${this.selected === i ? 'sel' : ''} ${c === '?' ? 'blank' : ''}" ${k === 4 ? 'tabindex="-1"' : `data-action="cell" data-i="${i}"`} style="--c:${COLOR_HEX[c]}" aria-label="${COLOR_NAMES[c] || 'blank'}"></button>`;
+      }).join('')}</div>`;
+    };
+    this.setEditing();
+    $('#solve-stage-label').textContent = 'Drag to spin and compare with your cube';
+    $('#solve-panel').innerHTML = `
+      <div class="panel-head"><button class="back" data-action="solve-home" aria-label="Back">${ICONS.back}</button><h2>Check your cube</h2></div>
+      <div class="panel-body">
+        <p>Compare this with your real cube. To fix a colour, tap the sticker, then tap the right colour.</p>
+        <div class="net">${FACES.map(face).join('')}</div>
+        ${this.paletteHTML(true)}
+        ${v.ok ? `<div class="ok-box">✓ Looks like a real cube. You’re ready to solve it!</div>` : `<div class="warn-box">${v.errors.map(e => `<p>${e}</p>`).join('')}</div>`}
+      </div>
+      <div class="panel-foot"><button class="btn ghost" data-action="scan-start" data-mode="${this.mode}">Start again</button><button class="btn good" data-action="coach-start" ${v.ok ? '' : 'disabled'}>Start solving</button></div>`;
+  },
+
+  // ----- coach -----
+  startCoach(start, pos = 0) {
+    let stages;
+    try { stages = solveLBL(start); } catch (err) { console.error(err); toast('Sorry, I couldn’t work out a solution for that cube. Check the colours again.', 3600); return; }
+    const flat = [];
+    stages.forEach((st, si) => st.steps.forEach((step, ki) => step.moves.forEach((tok, mi) => flat.push({ si, ki, mi, tok }))));
+    this.coach = { start: start.slice(), stages, flat, pos: Math.min(pos, flat.length) };
+    this.ready = pos > 0;
+    this.saveCoach();
+    this.screen = 'coach';
+    cube.setView('top');
+    cube.setState(this.coachState());
+    this.renderCoach();
+  },
+  saveCoach() {
+    const c = this.coach;
+    store.set('coach', c && c.pos < c.flat.length ? { start: c.start.join(''), pos: c.pos, total: c.flat.length } : null);
+  },
+  coachState(pos = this.coach.pos) {
+    return applyAlg(this.coach.start, this.coach.flat.slice(0, pos).map(f => f.tok));
+  },
+  renderCoach() {
+    const c = this.coach;
+    this.setEditing();
+    const label = $('#solve-stage-label');
+    cube.inputEnabled = false;
+    const strip = stageIdx => `<div class="stage-strip">${c.stages.map((st, i) => `<span class="${i < stageIdx || !st.steps.length ? 'done' : i === stageIdx ? 'now' : ''}">${i < stageIdx || (!st.steps.length && i !== stageIdx) ? '✓ ' : ''}${STAGE_NAMES[st.id]}</span>`).join('')}</div>`;
+    const head = `<div class="panel-head"><button class="back" data-action="solve-home" aria-label="Back">${ICONS.back}</button><h2>Solving your cube</h2><button class="btn ghost small" data-action="coach-oops">I messed up</button></div>`;
+    if (!c.flat.length) {
+      cube.showArrow(null);
+      label.textContent = '';
+      $('#solve-panel').innerHTML = `${head}<div class="panel-body"><div class="done-card"><div class="big">✨</div><h3>It’s already solved!</h3><p>Scramble it and scan it again when you’re ready.</p></div></div><div class="panel-foot"><button class="btn" data-action="scan-start" data-mode="${this.mode}">Scan again</button></div>`;
+      return;
+    }
+    if (c.pos >= c.flat.length) {
+      cube.showArrow(null);
+      cube.setFocus(null);
+      label.textContent = '';
+      $('#solve-panel').innerHTML = `${head}${strip(c.stages.length)}<div class="panel-body"><div class="done-card"><div class="big">🏆</div><h3>You solved your cube!</h3><p>${c.flat.length} turns, all by you. Scramble it and do it again: it gets faster every time.</p></div></div>
+        <div class="panel-foot"><button class="btn ghost" data-action="tab" data-tab="timer">Time yourself</button><button class="btn good" data-action="scan-start" data-mode="${this.mode}">Solve another</button></div>`;
+      return;
+    }
+    if (!this.ready) {
+      cube.showArrow(null);
+      cube.setFocus(null);
+      label.textContent = 'Your cube';
+      $('#solve-panel').innerHTML = `${head}<div class="panel-body"><div class="eyebrow">Get ready</div><h3 class="page-title">Hold it like this</h3>
+        <p>Hold your cube with <b>yellow on top</b> and <b>green facing you</b>, just like the cube on screen.</p>
+        <p>I’ll show one turn at a time. Do it on your cube, then tap the pink button. It’s about ${c.flat.length} turns, so take your time.</p></div>
+        <div class="panel-foot"><button class="btn pop" data-action="coach-ready">I’m ready</button></div>`;
+      return;
+    }
+    const cur = c.flat[c.pos];
+    const stage = c.stages[cur.si];
+    const step = stage.steps[cur.ki];
+    const [title, text] = describeStep(step, stage.id);
+    let stepStart = this.coachState(c.pos - cur.mi);
+    const now = this.coachState();
+    const lab = moveLabel(cur.tok, now);
+    const algBlock = step.alg ? `<div class="alg-card"><h4>${ALG_INFO[step.alg].name}${step.reps > 1 ? `<span class="count">× ${step.reps}</span>` : ''}</h4><div class="chips">${chipsHTML(splitAlg(ALG_INFO[step.alg].alg), S0)}</div></div>` : '';
+    cube.setFocus(step.focus || null);
+    if (!cube.busy) cube.showArrow(cur.tok);
+    label.textContent = `Turn ${c.pos + 1} of ${c.flat.length}`;
+    $('#solve-panel').innerHTML = `${head}${strip(cur.si)}
+      <div class="panel-body">
+        <div class="step-card">
+          <div class="step-meta"><span class="pill">${STAGE_NAMES[stage.id]}</span>step ${cur.ki + 1} of ${stage.steps.length}</div>
+          <h3>${title}</h3><p>${text}</p>
+          ${algBlock}
+          <div class="chips">${chipsHTML(step.moves, stepStart, { done: cur.mi, now: cur.mi })}</div>
+        </div>
+        <p style="margin-top:12px"><button class="link" data-action="open-lesson" data-id="${stage.id}">How does this stage work?</button></p>
+      </div>
+      <div class="panel-foot coach-foot">
+        <div class="mini-col"><button class="btn ghost round" data-action="coach-back" aria-label="Back one turn" ${c.pos === 0 ? 'disabled' : ''}>${ICONS.undo}</button><small>Back</small></div>
+        <div class="mini-col"><button class="btn ghost round" data-action="coach-show" aria-label="Show me again">${ICONS.replay}</button><small>Again</small></div>
+        <button class="big-next" data-action="coach-done" aria-label="Done: ${lab.text}"><div><small>Do this on your cube</small><div class="chips">${chipsHTML([cur.tok], now, { now: 0 })}</div></div><span class="big-next-text">${lab.text}<b>Tap when done ✓</b></span></button></div>`;
+  },
+  async coachDone() {
+    const c = this.coach;
+    if (this.busy || !c || c.pos >= c.flat.length) return;
+    this.busy = true;
+    const cur = c.flat[c.pos];
+    await cube.play([cur.tok], { arrows: false });
+    this.busy = false;
+    if (app.view !== 'solve' || this.coach !== c) return;
+    c.pos++;
+    this.saveCoach();
+    const next = c.flat[c.pos];
+    if (!next) { confetti(); }
+    else if (next.si !== cur.si) { confetti(); toast(`${STAGE_NAMES[c.stages[cur.si].id]} done! Next: ${STAGE_NAMES[c.stages[next.si].id]}`, 2600); }
+    this.renderCoach();
+  },
+  async coachBack() {
+    const c = this.coach;
+    if (this.busy || !c || c.pos === 0) return;
+    this.busy = true;
+    const tok = invertMove(c.flat[c.pos - 1].tok);
+    cube.showArrow(null);
+    toast(`Undo it on your cube too: ${moveLabel(tok, this.coachState()).short}`, 2800);
+    await cube.play([tok]);
+    this.busy = false;
+    if (app.view !== 'solve' || this.coach !== c) return;
+    c.pos--;
+    this.saveCoach();
+    this.renderCoach();
+  },
+  async coachShow() {
+    const c = this.coach;
+    if (this.busy || !c) return;
+    this.busy = true;
+    const tok = c.flat[c.pos].tok;
+    await cube.play([tok]);
+    await cube.wait(500);
+    await cube.play([invertMove(tok)], { arrows: false, speed: 1.6 });
+    this.busy = false;
+    if (app.view === 'solve' && this.coach === c) this.renderCoach();
+  },
+};
+function oopsSheet() {
+  openSheet(`<h2>No problem!</h2>
+    <div class="choice-list">
+      <button class="choice" data-action="close-sheet"><span class="choice-ic">↶</span><span><b>I did one or two wrong turns</b><small>Close this, then use “Back one turn”. Do the same undo turns on your cube.</small></span></button>
+      <button class="choice" data-action="scan-start" data-mode="camera"><span class="choice-ic">📷</span><span><b>Rescan my cube</b><small>Scan it again and I’ll carry on from where your cube is now.</small></span></button>
+      <button class="choice" data-action="scan-start" data-mode="manual"><span class="choice-ic">✋</span><span><b>Enter the colours by hand</b><small>Tap in where every colour is now.</small></span></button>
+    </div>`);
+}
+
 // ---------- Sheets ----------
 function settingsSheet() {
   const theme = store.get('theme'), speed = store.get('speed');
@@ -2004,7 +2692,7 @@ function realCubeSheet() {
     <p>To get the same cube as the example, start with a <b>solved</b> cube, yellow on top and green facing you, and do these moves:</p>
     <div class="scramble-box"><div class="chips">${chipsHTML(ex.scramble, S0)}</div></div>
     <p style="margin-top:12px">Each lesson picks up where the one before finished, so go through them in order and your real cube will match the screen.</p>
-    <p style="color:var(--ink-soft);font-size:14px">Cube already scrambled and you can’t solve it yet? Watch the example on screen for now. Scanning your own cube with the camera is coming next.</p>
+    <p style="color:var(--ink-soft);font-size:14px">Cube already scrambled? Use the <b>Solve</b> tab instead: scan your cube and get coached through solving it.</p>
     <div class="btn-row" style="margin-top:10px"><button class="btn" style="flex:1" data-action="close-sheet">Got it</button></div>`);
 }
 
@@ -2081,6 +2769,21 @@ const actions = {
     cube.setState(playCtl.state);
     playCtl.render(); playCtl.renderTimer();
   },
+  'scan-start': el => { closeSheet(); if (app.view !== 'solve') location.hash = 'solve'; solveCtl.stopCamera(); solveCtl.start(el.dataset.mode); },
+  'solve-home': () => { solveCtl.stopCamera(); cube.stop(); solveCtl.screen = 'home'; solveCtl.show(); },
+  capture: () => solveCtl.capture(),
+  retake: () => solveCtl.retake(),
+  'face-next': () => solveCtl.nextFace(),
+  'face-prev': () => solveCtl.prevFace(),
+  cell: el => solveCtl.tapCell(+el.dataset.i),
+  paint: el => solveCtl.tapPaint(el.dataset.c),
+  'coach-start': () => solveCtl.startCoach(solveCtl.facelets),
+  'coach-resume': () => { const c = store.get('coach'); if (c) solveCtl.startCoach(c.start.split(''), c.pos); },
+  'coach-ready': () => { solveCtl.ready = true; solveCtl.renderCoach(); },
+  'coach-done': () => solveCtl.coachDone(),
+  'coach-back': () => solveCtl.coachBack(),
+  'coach-show': () => solveCtl.coachShow(),
+  'coach-oops': oopsSheet,
   'timer-toggle': () => timerCtl.toggle(),
   'timer-difficulty': el => { store.set('timerDifficulty', el.dataset.id); timerCtl.scramble = null; timerCtl.render(); },
   'timer-new-scramble': () => { timerCtl.scramble = null; timerCtl.render(); },
