@@ -237,7 +237,10 @@ main { position: relative; overflow: hidden; min-height: 0; }
 
 .try-hint { display: flex; gap: 10px; align-items: center; background: var(--accent-soft); color: var(--ink); border-radius: 14px; padding: 10px 12px; font-size: 14px; margin-top: 10px; }
 .try-hint b { color: var(--accent); }
-.big-next { display: flex; align-items: center; gap: 12px; margin-top: 12px; padding: 12px; border-radius: 16px; border: 2px dashed var(--pop); }
+.big-next { display: flex; align-items: center; gap: 12px; width: 100%; margin-top: 0; padding: 12px; border-radius: 16px; border: 2px solid var(--pop); background: color-mix(in srgb, var(--pop) 8%, var(--panel)); box-shadow: 0 4px 0 color-mix(in srgb, var(--pop) 55%, transparent); text-align: left; font: inherit; color: inherit; transition: transform .08s, box-shadow .08s; }
+.big-next:active { transform: translateY(3px); box-shadow: 0 1px 0 color-mix(in srgb, var(--pop) 55%, transparent); }
+.big-next-text { margin-left: auto; text-align: right; font-size: 13px; color: var(--ink-soft); }
+.big-next-text b { display: block; color: var(--pop); font: 600 15px var(--font-display); margin-top: 2px; }
 .big-next .chip { font-size: 17px; padding: 8px 14px 8px 10px; }
 .big-next .chip .dot { width: 18px; height: 18px; }
 .big-next small { color: var(--ink-soft); display: block; font-size: 13px; }
@@ -1190,7 +1193,19 @@ class Cube3D {
     const r = n.cross(dv);
     const axis = [0, 1, 2].find(a => Math.round(r.getComponent(a)) !== 0);
     const tok = moveFromTurn(axis, d.pos[axis], Math.round(r.getComponent(axis)));
-    if (tok && this.onUserMove) this.onUserMove(tok);
+    // A swipe can be read more than one way (e.g. sliding along the top face). Let callers ask
+    // whether it also fits a move they expect: the touched cubie is in that layer and the
+    // sticker would move roughly the way the finger moved.
+    const point = d.point.clone(), pos = d.pos, drag = g.clone();
+    const fits = want => {
+      const t = moveTurn(want);
+      if (Math.abs(t.quarter) !== 1 || !t.layers.includes(pos[t.axis])) return false;
+      const axisV = new THREE.Vector3().setComponent(t.axis, t.quarter);
+      const vel = axisV.cross(point).normalize();
+      const sv = this.toScreen(point.clone().addScaledVector(vel, 0.6)).sub(this.toScreen(point)).normalize();
+      return sv.dot(drag) > 0.45;
+    };
+    if (tok && this.onUserMove) this.onUserMove(tok, fits);
   }
 
   frame(t) {
@@ -1303,7 +1318,7 @@ const LESSONS = [
     { type: 'info', eyebrow: 'Turns', title: 'Follow the pink arrow', state: () => S0, demo: "R R' U U'",
       body: `<p>The <b style="color:var(--pop)">pink arrow</b> shows which layer to turn and which way. Labels like <b>Right ↑</b> say the same thing in words.</p><p>A turn is always a quarter turn unless it says <b>×2</b>, which means a half turn.</p><p>Already know the letters (R, U, F…)? You can show them in Settings.</p>` },
     { type: 'try', eyebrow: 'Your turn', title: 'Do your first moves', state: () => S0,
-      steps: [{ moves: ['R', 'U', "R'", "U'"], kind: 'try', title: 'Follow the arrow', text: 'Put your finger on a sticker of the layer you want to turn and swipe the way the arrow points. You can also use the move buttons below.' }],
+      steps: [{ moves: ['R', 'U', "R'", "U'"], kind: 'try', title: 'Follow the arrow', text: 'Slide your finger on the cube the way the pink arrow points, or tap the pink button at the bottom.' }],
       body: `<p>That was the <b>4-move trick</b>. You’ll use it a lot.</p>` },
   ] },
   { id: 'daisy', stage: 'daisy', title: 'The daisy', blurb: 'Four white petals around the yellow center.', color: 'Y', pages: [
@@ -1607,7 +1622,7 @@ const lessonCtl = {
     cube.setFocus(step?.focus || null);
     const tryMode = this.mode === 'try' && !this.finished;
     cube.inputEnabled = tryMode;
-    cube.onUserMove = tryMode ? tok => this.userMove(tok) : null;
+    cube.onUserMove = tryMode ? (tok, fits) => this.userMove(tok, fits) : null;
     $('#lesson-stage-label').textContent = this.finished ? '' : tryMode ? 'Your turn: swipe the cube' : 'Watch';
     this.showNextArrow();
     if (tryMode) this.autoRotate();
@@ -1655,7 +1670,7 @@ const lessonCtl = {
     const exp = this.expected();
     let stateNow = startState;
     for (let k = 0; k < this.moveIdx; k++) stateNow = applyMove(stateNow, step.moves[k]);
-    const nextBlock = tryMode && exp ? `<div class="big-next"><div><small>Next move</small><div class="chips">${chipsHTML([exp], stateNow, { now: 0 })}</div></div><small style="margin-left:auto;text-align:right">${moveLabel(exp, stateNow).text}</small></div>` : '';
+    const nextBlock = tryMode && exp ? `<button class="big-next" data-action="do-next" aria-label="Do the next move: ${moveLabel(exp, stateNow).text}"><div><small>Next move</small><div class="chips">${chipsHTML([exp], stateNow, { now: 0 })}</div></div><span class="big-next-text">${moveLabel(exp, stateNow).text}<b>Tap here to do it</b></span></button>` : '';
     const controls = tryMode
       ? `<details class="pad-wrap" data-pad="lesson" ${app.padOpen.lesson ? 'open' : ''}><summary>Show move buttons</summary><div class="pad">${padHTML(cube.state)}</div></details>`
       : '';
@@ -1671,11 +1686,10 @@ const lessonCtl = {
         <h3>${title}</h3><p>${text}</p>
         ${algBlock}
         <div class="chips" id="step-chips">${chipsHTML(step.moves, startState, { done: this.moveIdx, now: tryMode || this.playing || this.moveIdx > 0 ? this.moveIdx : -1 })}</div>
-        ${nextBlock}
-        ${tryMode ? `<div class="try-hint">👆 <span>Swipe a sticker on the layer to turn, the way the <b>pink arrow</b> points. Drag the background to look around.</span></div>` : ''}
+        ${tryMode ? `<div class="try-hint">👆 <span><b>Two ways to turn:</b> tap the pink button at the bottom, or put your finger on the cube and slide it the way the <b>pink arrow</b> points. Do the same turn on your real cube as you go.</span></div>` : ''}
       </div>
       ${controls}`;
-    this.frame(body, tryMode ? this.navFoot() : watchFoot);
+    this.frame(body, tryMode ? (nextBlock || this.navFoot()) : watchFoot);
   },
   updateChips() {
     const step = this.steps[this.stepIdx];
@@ -1714,10 +1728,16 @@ const lessonCtl = {
     this.showNextArrow();
     this.renderSteps();
   },
-  async userMove(tok) {
+  async userMove(tok, fits) {
     if (cube.busy || this.finished) return;
     const exp = this.expected();
     if (!exp) return;
+    if (tok !== exp && fits) {
+      const e0 = parseMove(exp);
+      const options = e0.amount === 2 ? [e0.base, e0.base + "'"] : [exp];
+      const match = options.find(fits);
+      if (match) tok = match;
+    }
     const token = this.token;
     const e = parseMove(exp), u = parseMove(tok);
     cube.showArrow(null);
@@ -1735,7 +1755,7 @@ const lessonCtl = {
     } else {
       await cube.play([tok], { arrows: false });
       if (token !== this.token) return;
-      toast(`Oops, that was ${moveLabel(tok).short}. Undoing it…`);
+      toast(`Not quite: that was ${moveLabel(tok).short}. Putting it back. Follow the pink arrow!`, 2800);
       $('.big-next')?.classList.add('shake');
       await cube.wait(250);
       await cube.play([invertMove(tok)], { arrows: false, speed: 1.4 });
@@ -2010,6 +2030,7 @@ const actions = {
   mode: el => { lessonCtl.mode = lessonCtl.stepsMode = el.dataset.mode; lessonCtl.gotoStep(lessonCtl.stepIdx); },
   'mode-try-again': () => { lessonCtl.mode = lessonCtl.stepsMode = 'try'; lessonCtl.finished = false; lessonCtl.gotoStep(0); },
   'step-play': () => lessonCtl.playStep(),
+  'do-next': () => { const exp = lessonCtl.expected(); if (exp) lessonCtl.userMove(exp); },
   'step-next': () => {
     const L = lessonCtl;
     if (L.stepIdx === L.steps.length - 1) { cube.setState(L.starts[L.steps.length]); L.complete(); }
